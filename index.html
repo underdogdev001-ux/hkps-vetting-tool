@@ -227,7 +227,7 @@ body{background:var(--cream);color:var(--ink);font-family:'DM Sans',sans-serif;m
       <div class="drop-count" id="drop-count"></div>
     </div>
     <div class="upload-foot">
-      <div class="upload-note">Upload the application form and all supporting documents together.<br>Accepted formats: PDF, JPEG, PNG, TIFF. You will label each file before the check runs.</div>
+      <div class="upload-note">Upload any available application documents — partial submissions are accepted.<br>Accepted formats: PDF, JPEG, PNG, TIFF. You will label each file before the check runs.</div>
       <button class="btn-run" id="next-btn" disabled onclick="showTagPhase()">
         <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 8 16 12 12 16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
         Label documents
@@ -241,7 +241,7 @@ body{background:var(--cream);color:var(--ink);font-family:'DM Sans',sans-serif;m
       <div class="tag-hdr-l">
         <div class="tag-step">Step 2 of 2 · Label documents</div>
         <div class="tag-title">Assign each document a role</div>
-        <div class="tag-sub">Tell the AI what each file represents. Each role can only be assigned once.<br>Files marked "Other" will be uploaded but excluded from the eligibility check.</div>
+        <div class="tag-sub">Tell the AI what each file represents. Each role can only be assigned once.<br>You may submit a partial set — missing documents will be flagged as "Needs Clarification" in the report.</div>
       </div>
       <button class="btn-ghost" onclick="resetToUpload()">← Change files</button>
     </div>
@@ -470,9 +470,9 @@ function updateValidation(used) {
     Object.values(assignments).forEach(v => { if (v && v !== 'other') used[v] = (used[v] || 0) + 1; });
   }
 
-  const hasDups   = Object.values(used).some(n => n > 1);
-  const missing   = REQUIRED.filter(r => !used[r]);
-  const allReady  = !hasDups && !missing.length;
+  const hasDups  = Object.values(used).some(n => n > 1);
+  const labelled = Object.values(assignments).filter(v => v).length;
+  const missing  = REQUIRED.filter(r => !used[r]);
 
   const vbar = G('val-bar');
   vbar.style.display = 'block';
@@ -480,18 +480,22 @@ function updateValidation(used) {
   if (hasDups) {
     vbar.className = 'val-bar warn';
     vbar.textContent = 'Each document type can only be assigned once. Please fix the duplicate labels below.';
+  } else if (labelled === 0) {
+    vbar.className = 'val-bar warn';
+    vbar.textContent = 'Label at least one document to run the check.';
   } else if (missing.length) {
     vbar.className = 'val-bar warn';
     const names = missing.map(r => ROLES.find(x => x.value === r)?.label || r);
-    vbar.textContent = 'Still needed: ' + names.join(' · ');
+    vbar.textContent = 'Not submitted: ' + names.join(' · ') + '. Affected criteria will show "Needs Clarification".';
   } else {
     vbar.className = 'val-bar ok';
     vbar.textContent = 'All required documents labelled — ready to run the eligibility check.';
   }
 
-  const labelled = Object.values(assignments).filter(v => v).length;
-  G('tag-status').textContent = labelled + ' of ' + files.length + ' labelled · ' + missing.length + ' required role' + (missing.length === 1 ? '' : 's') + ' remaining';
-  G('run-btn').disabled = !allReady || !G('webhook-url').value.trim().startsWith('https://');
+  const notOther = Object.values(assignments).filter(v => v && v !== 'other').length;
+  G('tag-status').textContent = labelled + ' of ' + files.length + ' labelled' +
+    (missing.length ? ' · ' + missing.length + ' doc' + (missing.length === 1 ? '' : 's') + ' not submitted' : '');
+  G('run-btn').disabled = hasDups || notOther === 0;
 }
 
 /* ── Vetting ── */
