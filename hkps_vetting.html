@@ -92,7 +92,7 @@ body{background:var(--cream);color:var(--ink);font-family:'DM Sans',sans-serif;m
 .btn-reset{font-family:'DM Sans',sans-serif;font-size:12px;color:var(--ink-mid);background:transparent;border:1px solid var(--rule);padding:0 12px;height:30px;border-radius:3px;cursor:pointer;display:flex;align-items:center;gap:5px;white-space:nowrap;transition:background .15s;flex-shrink:0}
 .btn-reset:hover{background:var(--cream)}
 .btn-reset svg{width:11px;height:11px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round}
-.btn-stop{margin-top:1.25rem;font-family:'DM Sans',sans-serif;font-size:12px;color:var(--fail-txt);background:var(--fail-bg);border:1px solid var(--fail-bd);padding:0 14px;height:32px;border-radius:3px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:opacity .15s}.btn-stop:hover{opacity:.8}.btn-stop svg{width:11px;height:11px;fill:currentColor;stroke:none}
+.btn-stop{font-family:'DM Sans',sans-serif;font-size:12px;color:var(--fail-txt);background:var(--fail-bg);border:1px solid var(--fail-bd);padding:0 14px;height:32px;border-radius:3px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:opacity .15s;position:relative;z-index:20}.btn-stop:hover{opacity:.8}.btn-stop svg{width:11px;height:11px;fill:currentColor;stroke:none}
 .pg-foot{margin-top:2.5rem;padding-top:1.25rem;border-top:1px solid var(--rule);display:flex;justify-content:space-between}
 .pg-note{font-size:11px;color:var(--ink-faint)}
 .pg-mark{font-family:'EB Garamond',serif;font-size:13px;color:var(--ink-faint);font-style:italic}
@@ -145,10 +145,12 @@ body{background:var(--cream);color:var(--ink);font-family:'DM Sans',sans-serif;m
   <div class="loading" id="loading-panel">
     <div class="ld-steps" id="steps-wrap"></div>
     <div class="ld-note">OCR extraction and AI analysis typically takes 15–30 seconds</div>
-    <button class="btn-stop" id="stop-btn" onclick="stopVetting()">
-      <svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2"/></svg>
-      Stop & reset
-    </button>
+    <div style="margin-top:1.25rem">
+      <button class="btn-stop" id="stop-btn" onclick="stopVetting()" type="button">
+        <svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2"/></svg>
+        Stop &amp; reset
+      </button>
+    </div>
   </div>
 
   <div class="report" id="report-panel"><div class="rpt-card" id="rpt-card"></div></div>
