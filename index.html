@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HKPS · Application Vetting System</title>
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root{--cream:#F5F2EC;--ink:#1A1A18;--ink-mid:#4A4A45;--ink-light:#8A8A82;--ink-faint:#C8C5BC;--rule:#D8D4CA;--pass-bg:#EDF5EE;--pass-txt:#2A6B35;--pass-bd:#B8D9BC;--warn-bg:#FDF6E8;--warn-txt:#7A5A10;--warn-bd:#F0D898;--fail-bg:#FAEDED;--fail-txt:#7A2020;--fail-bd:#E8B8B8}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--cream);color:var(--ink);font-family:'DM Sans',sans-serif;min-height:100vh}
+.hdr{background:var(--ink);color:var(--cream);padding:0 2rem;height:52px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10}
+.hdr-l{display:flex;align-items:center;gap:12px}
+.hdr-seal{width:26px;height:26px;border:1px solid rgba(255,255,255,.2);border-radius:50%;display:flex;align-items:center;justify-content:center}
+.hdr-seal svg{width:13px;height:13px;stroke:var(--cream);fill:none;stroke-width:1.5}
+.hdr-org{font-family:'EB Garamond',serif;font-size:15px}
+.hdr-div{width:1px;height:14px;background:rgba(255,255,255,.18)}
+.hdr-mod{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.45)}
+.hdr-r{display:flex;align-items:center;gap:6px;font-size:11px;color:rgba(255,255,255,.45)}
+.pulse{width:6px;height:6px;border-radius:50%;background:#5A8A60;animation:pulse 2.5s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.page{max-width:740px;margin:0 auto;padding:2.5rem 1.5rem 5rem}
+.intro{margin-bottom:2.5rem;padding-bottom:2rem;border-bottom:1px solid var(--rule)}
+.intro-lbl{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-light);margin-bottom:8px}
+.intro-title{font-family:'EB Garamond',serif;font-size:34px;font-weight:400;line-height:1.2;margin-bottom:10px}
+.intro-desc{font-size:13.5px;color:var(--ink-mid);line-height:1.75;max-width:520px}
+.bylaw{display:inline-block;margin-top:12px;font-size:10px;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-light);border:1px solid var(--rule);padding:3px 9px;border-radius:2px}
+.cfg{display:flex;align-items:center;gap:8px;padding:9px 14px;background:#fff;border:1px solid var(--rule);border-radius:4px;margin-bottom:1.25rem}
+.cfg-dot{width:7px;height:7px;border-radius:50%;background:var(--ink-faint);flex-shrink:0;transition:background .25s}
+.cfg-dot.on{background:#5A8A60}.cfg-dot.warn{background:#D4A010}
+.cfg-lbl{font-size:12px;color:var(--ink-light);flex-shrink:0}
+.cfg-input{flex:1;font-family:'DM Sans',sans-serif;font-size:12px;border:none;outline:none;background:transparent;color:var(--ink);min-width:0}
+.cfg-input::placeholder{color:var(--ink-faint)}
+.cfg-tag{font-size:11px;color:var(--ink-light);white-space:nowrap;flex-shrink:0}
+.upload-panel{background:#fff;border:1px solid var(--rule);border-radius:4px;overflow:hidden}
+.drop{padding:2.75rem 2rem;text-align:center;cursor:pointer;border-bottom:1px solid var(--rule);transition:background .15s}
+.drop:hover,.drop.over{background:var(--cream)}
+.drop input{display:none}
+.drop-icon{width:44px;height:44px;margin:0 auto 14px;border:1px solid var(--rule);border-radius:4px;display:flex;align-items:center;justify-content:center;background:var(--cream)}
+.drop-icon svg{width:20px;height:20px;stroke:var(--ink-mid);fill:none;stroke-width:1.3}
+.drop-title{font-family:'EB Garamond',serif;font-size:20px;margin-bottom:5px}
+.drop-hint{font-size:13px;color:var(--ink-light)}
+.drop-file{font-size:12px;color:#1A3A6A;margin-top:10px;font-weight:500;display:none}
+.upload-foot{padding:12px 18px;display:flex;align-items:center;justify-content:space-between;gap:12px;background:#FAFAF8}
+.upload-note{font-size:12px;color:var(--ink-light);line-height:1.5}
+.btn-run{font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;background:var(--ink);color:var(--cream);border:none;padding:0 22px;height:36px;border-radius:3px;cursor:pointer;display:flex;align-items:center;gap:7px;white-space:nowrap;transition:opacity .15s;flex-shrink:0}
+.btn-run:hover{opacity:.82}.btn-run:disabled{opacity:.28;cursor:not-allowed}
+.btn-run svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:1.8}
+.err{display:none;margin-top:.75rem;padding:10px 14px;background:var(--fail-bg);border:1px solid var(--fail-bd);border-radius:4px;font-size:13px;color:var(--fail-txt);line-height:1.6}
+.err.show{display:block}
+.loading{display:none;background:#fff;border:1px solid var(--rule);border-radius:4px;padding:3rem 2rem;text-align:center}
+.loading.show{display:block}
+.ld-steps{display:flex;flex-direction:column;gap:10px;max-width:300px;margin:0 auto 1.75rem;text-align:left}
+.ld-step{display:flex;align-items:center;gap:11px;font-size:13px;color:var(--ink-faint);transition:color .35s}
+.ld-step.active{color:var(--ink-mid)}.ld-step.done{color:var(--pass-txt)}
+.s-ico{width:18px;height:18px;border-radius:50%;border:1px solid var(--ink-faint);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .3s}
+.ld-step.active .s-ico{border-color:var(--ink-mid)}
+.ld-step.done .s-ico{border-color:var(--pass-txt);background:var(--pass-bg)}
+.s-ico svg{width:9px;height:9px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.spinner{width:9px;height:9px;border:1.5px solid var(--ink-faint);border-top-color:var(--ink-mid);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.ld-note{font-size:12px;color:var(--ink-light);font-style:italic}
+.report{display:none;animation:fadeUp .35s ease both}
+.report.show{display:block}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.rpt-card{background:#fff;border:1px solid var(--rule);border-radius:4px;overflow:hidden}
+.rpt-hdr{padding:1.25rem 1.75rem;border-bottom:1px solid var(--rule);display:flex;align-items:flex-start;justify-content:space-between;gap:14px;background:#FAFAF8}
+.rpt-person{display:flex;align-items:center;gap:12px}
+.rpt-av{width:40px;height:40px;border-radius:50%;background:var(--ink);color:var(--cream);display:flex;align-items:center;justify-content:center;font-family:'EB Garamond',serif;font-size:15px;flex-shrink:0}
+.rpt-name{font-family:'EB Garamond',serif;font-size:21px;font-weight:400;line-height:1.2}
+.rpt-meta{font-size:11px;color:var(--ink-light);margin-top:3px}
+.pill{display:inline-flex;align-items:center;gap:6px;padding:5px 12px;border-radius:2px;font-size:11px;font-weight:500;white-space:nowrap;flex-shrink:0}
+.pill-dot{width:6px;height:6px;border-radius:50%}
+.pill-Pass{background:var(--pass-bg);color:var(--pass-txt);border:1px solid var(--pass-bd)}.pill-Pass .pill-dot{background:var(--pass-txt)}
+.pill-Clarify{background:var(--warn-bg);color:var(--warn-txt);border:1px solid var(--warn-bd)}.pill-Clarify .pill-dot{background:var(--warn-txt)}
+.pill-Fail{background:var(--fail-bg);color:var(--fail-txt);border:1px solid var(--fail-bd)}.pill-Fail .pill-dot{background:var(--fail-txt)}
+.criteria{padding:1.5rem 1.75rem;display:flex;flex-direction:column;gap:8px}
+.crit{border:1px solid var(--rule);border-radius:3px;overflow:hidden}
+.crit-hd{display:flex;align-items:center;gap:12px;padding:12px 16px;background:#FAFAF8;border-bottom:1px solid var(--rule)}
+.crit-num{font-family:'EB Garamond',serif;font-size:13px;color:var(--ink-light);width:18px;flex-shrink:0}
+.crit-lbl{font-size:13px;font-weight:500;flex:1;color:var(--ink)}
+.crit-badge{font-size:10px;font-weight:500;padding:2px 9px;border-radius:2px;white-space:nowrap}
+.cb-Pass{background:var(--pass-bg);color:var(--pass-txt);border:1px solid var(--pass-bd)}
+.cb-Clarify{background:var(--warn-bg);color:var(--warn-txt);border:1px solid var(--warn-bd)}
+.cb-Fail{background:var(--fail-bg);color:var(--fail-txt);border:1px solid var(--fail-bd)}
+.crit-body{padding:12px 16px 12px 46px;font-size:13.5px;color:var(--ink-mid);line-height:1.75;background:#fff}
+.rpt-summary{padding:1.25rem 1.75rem;border-top:1px solid var(--rule);background:#FAFAF8}
+.sum-lbl{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-light);margin-bottom:7px}
+.sum-txt{font-family:'EB Garamond',serif;font-size:17px;color:var(--ink);line-height:1.7;font-style:italic}
+.rpt-foot{padding:.9rem 1.75rem;border-top:1px solid var(--rule);display:flex;align-items:center;justify-content:space-between;gap:14px}
+.disclaimer{font-size:11px;color:var(--ink-light);line-height:1.6;max-width:440px}
+.btn-reset{font-family:'DM Sans',sans-serif;font-size:12px;color:var(--ink-mid);background:transparent;border:1px solid var(--rule);padding:0 12px;height:30px;border-radius:3px;cursor:pointer;display:flex;align-items:center;gap:5px;white-space:nowrap;transition:background .15s;flex-shrink:0}
+.btn-reset:hover{background:var(--cream)}
+.btn-reset svg{width:11px;height:11px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round}
+.pg-foot{margin-top:2.5rem;padding-top:1.25rem;border-top:1px solid var(--rule);display:flex;justify-content:space-between}
+.pg-note{font-size:11px;color:var(--ink-faint)}
+.pg-mark{font-family:'EB Garamond',serif;font-size:13px;color:var(--ink-faint);font-style:italic}
+</style>
+</head>
+<body>
+<header class="hdr">
+  <div class="hdr-l">
+    <div class="hdr-seal"><svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg></div>
+    <span class="hdr-org">Hong Kong Psychological Society</span>
+    <div class="hdr-div"></div>
+    <span class="hdr-mod">Registration Board</span>
+  </div>
+  <div class="hdr-r"><div class="pulse" id="hdr-pulse"></div><span id="hdr-status">Scenario active</span></div>
+</header>
+
+<main class="page">
+  <div class="intro">
+    <div class="intro-lbl">Automated Vetting · AI-assisted review</div>
+    <h1 class="intro-title">Registered Psychologist<br>Application Eligibility Check</h1>
+    <p class="intro-desc">Upload a completed application form to run an automated eligibility assessment against the three admission criteria for Registered Psychologist status. Results are AI-generated and advisory only.</p>
+    <span class="bylaw">By-Laws s.21 · HKPS Registration Board</span>
+  </div>
+
+  <div class="cfg">
+    <div class="cfg-dot on" id="cfg-dot"></div>
+    <span class="cfg-lbl">Webhook</span>
+    <input class="cfg-input" type="text" id="webhook-url" value="https://hook.eu2.make.com/v830s5r42fgkxnshkmlkv8avaehnnypf" oninput="onUrlChange()">
+    <span class="cfg-tag" id="cfg-tag">Connected</span>
+  </div>
+
+  <div class="upload-panel" id="upload-panel">
+    <div class="drop" id="drop-zone" onclick="document.getElementById('fi').click()">
+      <input type="file" id="fi" accept=".pdf">
+      <div class="drop-icon"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16c0 1.1.9 2 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><polyline points="9 15 12 12 15 15"/></svg></div>
+      <div class="drop-title">Drop application PDF here</div>
+      <div class="drop-hint">or click to browse · PDF only</div>
+      <div class="drop-file" id="file-label"></div>
+    </div>
+    <div class="upload-foot">
+      <div class="upload-note">Sent securely to Make.com for OCR and AI analysis.<br>No data is stored by this interface.</div>
+      <button class="btn-run" id="submit-btn" disabled onclick="runVetting()">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 8 16 12 12 16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+        Run eligibility check
+      </button>
+    </div>
+  </div>
+  <div class="err" id="err-box"></div>
+
+  <div class="loading" id="loading-panel">
+    <div class="ld-steps" id="steps-wrap"></div>
+    <div class="ld-note">OCR extraction and AI analysis typically takes 15–30 seconds</div>
+  </div>
+
+  <div class="report" id="report-panel"><div class="rpt-card" id="rpt-card"></div></div>
+
+  <footer class="pg-foot">
+    <span class="pg-note">For internal use by the HKPS Registration Board only</span>
+    <span class="pg-mark">HKPS · Vetting System v1.0</span>
+  </footer>
+</main>
+
+<script>
+const STEPS_LABELS=['Sending document to Make','Extracting text via OCR','Analysing academic records','Checking post-qualification experience','Verifying declarations','Compiling eligibility report'];
+let file=null, si=0, st;
+
+// Build step elements
+const sw=document.getElementById('steps-wrap');
+STEPS_LABELS.forEach((lbl,i)=>{
+  const d=document.createElement('div');
+  d.className='ld-step'; d.id='s'+i;
+  d.innerHTML=`<div class="s-ico"><svg viewBox="0 0 9 9"><circle cx="4.5" cy="4.5" r="2.5" fill="var(--ink-faint)" stroke="none"/></svg></div><span>${lbl}</span>`;
+  sw.appendChild(d);
+});
+
+const G=id=>document.getElementById(id);
+function onUrlChange(){
+  const v=G('webhook-url').value.trim();
+  const isMake=v.startsWith('https://hook.');
+  const isHttps=v.startsWith('https://');
+  G('cfg-dot').className='cfg-dot'+(isMake?' on':isHttps?' warn':'');
+  G('cfg-tag').textContent=isMake?'Connected':isHttps?'Check URL':'';
+  G('hdr-pulse').style.background=isMake?'#5A8A60':'#D4A010';
+  G('hdr-status').textContent=isMake?'Scenario active':'No webhook';
+  checkReady();
+}
+function checkReady(){ G('submit-btn').disabled=!(file&&G('webhook-url').value.trim().startsWith('https://')); }
+function showErr(m){ const e=G('err-box'); e.textContent=m; e.classList.add('show'); }
+function hideErr(){ G('err-box').classList.remove('show'); }
+
+G('fi').addEventListener('change',e=>{ if(e.target.files[0]) setFile(e.target.files[0]); });
+G('drop-zone').addEventListener('dragover',e=>{ e.preventDefault(); G('drop-zone').classList.add('over'); });
+G('drop-zone').addEventListener('dragleave',()=>G('drop-zone').classList.remove('over'));
+G('drop-zone').addEventListener('drop',e=>{ e.preventDefault(); G('drop-zone').classList.remove('over'); if(e.dataTransfer.files[0]) setFile(e.dataTransfer.files[0]); });
+
+function setFile(f){
+  if(!f.name.toLowerCase().endsWith('.pdf')){ showErr('Please upload a PDF file only.'); return; }
+  file=f;
+  const fl=G('file-label'); fl.textContent=f.name+'  ·  '+(f.size/1024).toFixed(0)+' KB'; fl.style.display='block';
+  hideErr(); checkReady();
+}
+
+function resetSteps(){
+  si=0;
+  STEPS_LABELS.forEach((_,i)=>{
+    const s=G('s'+i); s.className='ld-step';
+    s.querySelector('.s-ico').innerHTML='<svg viewBox="0 0 9 9"><circle cx="4.5" cy="4.5" r="2.5" fill="var(--ink-faint)" stroke="none"/></svg>';
+  });
+}
+function advStep(){
+  if(si>0){
+    const p=G('s'+(si-1)); p.className='ld-step done';
+    p.querySelector('.s-ico').innerHTML='<svg viewBox="0 0 9 9" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1.5 4.5 3.5 7 7.5 2"/></svg>';
+  }
+  if(si<STEPS_LABELS.length){
+    const c=G('s'+si); c.classList.add('active');
+    c.querySelector('.s-ico').innerHTML='<div class="spinner"></div>';
+    si++;
+  }
+}
+
+function readBase64(f){ return new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>res(r.result.split(',')[1]); r.onerror=()=>rej(new Error('File read failed')); r.readAsDataURL(f); }); }
+
+async function runVetting(){
+  hideErr();
+  G('upload-panel').style.display='none';
+  G('report-panel').classList.remove('show');
+  resetSteps();
+  G('loading-panel').classList.add('show');
+  advStep();
+  st=setInterval(()=>{ if(si<STEPS_LABELS.length-1) advStep(); },5000);
+
+  let b64;
+  try{ b64=await readBase64(file); }
+  catch(e){ clearInterval(st); G('loading-panel').classList.remove('show'); G('upload-panel').style.display=''; showErr('Could not read file: '+e.message); return; }
+
+  const url=G('webhook-url').value.trim();
+  const proxy='https://corsproxy.io/?'+encodeURIComponent(url);
+
+  try{
+    const res=await fetch(proxy,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({fileName:file.name,mimeType:'application/pdf',fileData:b64})});
+    clearInterval(st);
+    while(si<=STEPS_LABELS.length) advStep();
+    if(!res.ok) throw new Error('Make returned HTTP '+res.status+' — check the scenario is active');
+    const data=await res.json();
+    await new Promise(r=>setTimeout(r,500));
+    G('loading-panel').classList.remove('show');
+    renderReport(data);
+  }catch(e){
+    clearInterval(st); G('loading-panel').classList.remove('show'); G('upload-panel').style.display='';
+    showErr('Request failed: '+e.message);
+  }
+}
+
+function norm(s){
+  if(!s) return 'Clarify';
+  const l=s.toLowerCase();
+  if((l.includes('pass')||l.includes('met')||l.includes('satisfied'))&&!l.includes('not')&&!l.includes('fail')) return 'Pass';
+  if(l.includes('fail')||l.includes('not pass')||l.includes('not met')) return 'Fail';
+  return 'Clarify';
+}
+function blbl(s){ return s==='Pass'?'Pass':s==='Fail'?'Fail':'Needs Clarification'; }
+
+function renderReport(d){
+  const name=d.name||'Unknown Applicant';
+  const overall=norm(d.overall_status||d.status);
+  const ini=name.split(' ').filter(Boolean).map(n=>n[0]).join('').slice(0,2).toUpperCase();
+  const now=new Date().toLocaleDateString('en-HK',{day:'numeric',month:'long',year:'numeric'});
+  const criteria=[
+    {n:'01',lbl:'Academic qualifications',st:norm(d.academic_status),det:d.academic_reason||d.reason||'No detail returned.'},
+    {n:'02',lbl:'Post-qualification experience',st:norm(d.experience_status),det:d.experience_reason||'No detail returned.'},
+    {n:'03',lbl:'Supervisor sign-off & declaration',st:norm(d.declaration_status),det:d.declaration_reason||'No detail returned.'}
+  ];
+  const summary=d.reason||[d.academic_reason,d.experience_reason,d.declaration_reason].filter(Boolean).join(' ')||'Analysis complete.';
+  G('rpt-card').innerHTML=`
+    <div class="rpt-hdr">
+      <div class="rpt-person">
+        <div class="rpt-av">${ini}</div>
+        <div><div class="rpt-name">${name}</div><div class="rpt-meta">Registered Psychologist application &nbsp;·&nbsp; ${now}</div></div>
+      </div>
+      <div class="pill pill-${overall}"><span class="pill-dot"></span>${blbl(overall)}</div>
+    </div>
+    <div class="criteria">${criteria.map(c=>`<div class="crit"><div class="crit-hd"><span class="crit-num">${c.n}</span><span class="crit-lbl">${c.lbl}</span><span class="crit-badge cb-${c.st}">${blbl(c.st)}</span></div><div class="crit-body">${c.det}</div></div>`).join('')}</div>
+    <div class="rpt-summary"><div class="sum-lbl">AI Summary</div><div class="sum-txt">${summary}</div></div>
+    <div class="rpt-foot">
+      <div class="disclaimer">Results are AI-generated and advisory only. All applications remain subject to final review and decision by the HKPS Registration Board.</div>
+      <button class="btn-reset" onclick="resetUI()"><svg viewBox="0 0 24 24"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4"/></svg>Check another</button>
+    </div>`;
+  G('report-panel').classList.add('show');
+}
+
+function resetUI(){
+  G('report-panel').classList.remove('show'); G('upload-panel').style.display='';
+  const fl=G('file-label'); fl.style.display='none'; fl.textContent='';
+  G('submit-btn').disabled=true; file=null; G('fi').value=''; hideErr();
+}
+</script>
+</body>
+</html>
