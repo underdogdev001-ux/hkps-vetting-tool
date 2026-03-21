@@ -48,12 +48,21 @@ body{background:var(--cream);color:var(--ink);font-family:'DM Sans',sans-serif;m
 .btn-run svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:1.8}
 .err{display:none;margin-top:.75rem;padding:10px 14px;background:var(--fail-bg);border:1px solid var(--fail-bd);border-radius:4px;font-size:13px;color:var(--fail-txt);line-height:1.6}
 .err.show{display:block}
-.loading{display:none;background:#fff;border:1px solid var(--rule);border-radius:4px;padding:3rem 2rem;text-align:center}
+/* Split view */
+.split-view{display:none;height:calc(100vh - 52px);overflow:hidden}
+.split-view.show{display:flex}
+.split-left{flex:1;min-width:0;background:#525659}
+#pdf-frame{width:100%;height:100%;border:none;display:block}
+.split-right{width:460px;flex-shrink:0;overflow-y:auto;border-left:1px solid var(--rule);background:var(--cream)}
+.split-right-inner{padding:2rem 1.5rem 4rem}
+/* Loading */
+.loading{display:none;padding:3rem 0;text-align:center}
 .loading.show{display:block}
 .ld-spinner{width:32px;height:32px;border:2.5px solid var(--rule);border-top-color:var(--ink-mid);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 1.25rem}
 @keyframes spin{to{transform:rotate(360deg)}}
 .ld-title{font-family:'EB Garamond',serif;font-size:19px;margin-bottom:6px}
 .ld-note{font-size:12px;color:var(--ink-light);font-style:italic}
+/* Report */
 .report{display:none;animation:fadeUp .35s ease both}
 .report.show{display:block}
 @keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
@@ -80,7 +89,7 @@ body{background:var(--cream);color:var(--ink);font-family:'DM Sans',sans-serif;m
 .crit-body{padding:12px 16px 12px 46px;font-size:13.5px;color:var(--ink-mid);line-height:1.75;background:#fff}
 .rpt-summary{padding:1.25rem 1.75rem;border-top:1px solid var(--rule);background:#FAFAF8}
 .sum-lbl{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-light);margin-bottom:7px}
-.sum-txt{font-family:'EB Garamond',serif;font-size:17px;color:var(--ink);line-height:1.7;font-style:italic}
+.sum-txt{font-size:13.5px;color:var(--ink-mid);line-height:1.75}
 .rpt-foot{padding:.9rem 1.75rem;border-top:1px solid var(--rule);display:flex;align-items:center;justify-content:space-between;gap:14px}
 .disclaimer{font-size:11px;color:var(--ink-light);line-height:1.6;max-width:440px}
 .btn-reset{font-family:'DM Sans',sans-serif;font-size:12px;color:var(--ink-mid);background:transparent;border:1px solid var(--rule);padding:0 12px;height:30px;border-radius:3px;cursor:pointer;display:flex;align-items:center;gap:5px;white-space:nowrap;transition:background .15s;flex-shrink:0}
@@ -103,7 +112,8 @@ body{background:var(--cream);color:var(--ink);font-family:'DM Sans',sans-serif;m
   <div class="hdr-r"><div class="pulse" id="hdr-pulse"></div><span id="hdr-status">Scenario active</span></div>
 </header>
 
-<main class="page">
+<!-- Upload page -->
+<main class="page" id="main-page">
   <div class="intro">
     <div class="intro-lbl">Automated Vetting · AI-assisted review</div>
     <h1 class="intro-title">Registered Psychologist<br>Application Eligibility Check</h1>
@@ -136,28 +146,39 @@ body{background:var(--cream);color:var(--ink);font-family:'DM Sans',sans-serif;m
   </div>
   <div class="err" id="err-box"></div>
 
-  <div class="loading" id="loading-panel">
-    <div class="ld-spinner"></div>
-    <div class="ld-title">Analysing application…</div>
-    <div class="ld-note">OCR extraction and AI analysis typically takes 15–30 seconds</div>
-  </div>
-  <div id="stop-wrap" style="display:none;position:fixed;bottom:28px;left:50%;transform:translateX(-50%);z-index:999">
-    <button class="btn-stop" id="stop-btn" type="button" onclick="stopVetting()">
-      <svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2"/></svg>
-      Stop &amp; reset
-    </button>
-  </div>
-
-  <div class="report" id="report-panel"><div class="rpt-card" id="rpt-card"></div></div>
-
   <footer class="pg-foot">
     <span class="pg-note">For internal use by the HKPS Registration Board only</span>
     <span class="pg-mark">HKPS · Vetting System v1.0</span>
   </footer>
 </main>
 
+<!-- Split view: PDF left, results right -->
+<div class="split-view" id="split-view">
+  <div class="split-left">
+    <iframe id="pdf-frame" title="Application PDF"></iframe>
+  </div>
+  <div class="split-right">
+    <div class="split-right-inner">
+      <div class="loading" id="loading-panel">
+        <div class="ld-spinner"></div>
+        <div class="ld-title">Analysing application…</div>
+        <div class="ld-note">OCR extraction and AI analysis typically takes 15–30 seconds</div>
+      </div>
+      <div class="report" id="report-panel"><div class="rpt-card" id="rpt-card"></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- Stop button: fixed, always above everything -->
+<div id="stop-wrap" style="display:none;position:fixed;bottom:28px;left:50%;transform:translateX(-50%);z-index:999">
+  <button class="btn-stop" id="stop-btn" type="button" onclick="stopVetting()">
+    <svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2"/></svg>
+    Stop &amp; reset
+  </button>
+</div>
+
 <script>
-let file=null, abortCtrl=null;
+let file=null, abortCtrl=null, pdfBlobUrl=null;
 
 const G=id=>document.getElementById(id);
 function onUrlChange(){
@@ -188,18 +209,31 @@ function setFile(f){
 
 function readBase64(f){ return new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>res(r.result.split(',')[1]); r.onerror=()=>rej(new Error('File read failed')); r.readAsDataURL(f); }); }
 
+function showSplit(){
+  G('main-page').style.display='none';
+  if(pdfBlobUrl) URL.revokeObjectURL(pdfBlobUrl);
+  pdfBlobUrl=URL.createObjectURL(file);
+  G('pdf-frame').src=pdfBlobUrl;
+  G('split-view').classList.add('show');
+}
+function hideSplit(){
+  G('split-view').classList.remove('show');
+  G('main-page').style.display='';
+  G('pdf-frame').src='';
+  if(pdfBlobUrl){ URL.revokeObjectURL(pdfBlobUrl); pdfBlobUrl=null; }
+}
 function showLoading(){ G('loading-panel').classList.add('show'); G('stop-wrap').style.display='block'; }
 function hideLoading(){ G('loading-panel').classList.remove('show'); G('stop-wrap').style.display='none'; }
 
 async function runVetting(){
   hideErr();
-  G('upload-panel').style.display='none';
+  showSplit();
   G('report-panel').classList.remove('show');
   showLoading();
 
   let b64;
   try{ b64=await readBase64(file); }
-  catch(e){ hideLoading(); G('upload-panel').style.display=''; showErr('Could not read file: '+e.message); return; }
+  catch(e){ hideLoading(); hideSplit(); showErr('Could not read file: '+e.message); return; }
 
   const url=G('webhook-url').value.trim();
   const proxy='https://corsproxy.io/?'+encodeURIComponent(url);
@@ -212,7 +246,7 @@ async function runVetting(){
     hideLoading();
     renderReport(data);
   }catch(e){
-    hideLoading(); G('upload-panel').style.display='';
+    hideLoading(); hideSplit();
     if(e.name==='AbortError') return;
     showErr('Request failed: '+e.message);
   }
@@ -221,7 +255,7 @@ async function runVetting(){
 function stopVetting(){
   if(abortCtrl){ abortCtrl.abort(); abortCtrl=null; }
   hideLoading();
-  G('upload-panel').style.display='';
+  hideSplit();
   hideErr();
 }
 
@@ -263,7 +297,8 @@ function renderReport(d){
 }
 
 function resetUI(){
-  G('report-panel').classList.remove('show'); G('upload-panel').style.display='';
+  G('report-panel').classList.remove('show');
+  hideSplit();
   const fl=G('file-label'); fl.style.display='none'; fl.textContent='';
   G('submit-btn').disabled=true; file=null; G('fi').value=''; hideErr();
 }
