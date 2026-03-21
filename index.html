@@ -92,6 +92,7 @@ body{background:var(--cream);color:var(--ink);font-family:'DM Sans',sans-serif;m
 .btn-reset{font-family:'DM Sans',sans-serif;font-size:12px;color:var(--ink-mid);background:transparent;border:1px solid var(--rule);padding:0 12px;height:30px;border-radius:3px;cursor:pointer;display:flex;align-items:center;gap:5px;white-space:nowrap;transition:background .15s;flex-shrink:0}
 .btn-reset:hover{background:var(--cream)}
 .btn-reset svg{width:11px;height:11px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round}
+.btn-stop{margin-top:1.25rem;font-family:'DM Sans',sans-serif;font-size:12px;color:var(--fail-txt);background:var(--fail-bg);border:1px solid var(--fail-bd);padding:0 14px;height:32px;border-radius:3px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:opacity .15s}.btn-stop:hover{opacity:.8}.btn-stop svg{width:11px;height:11px;fill:currentColor;stroke:none}
 .pg-foot{margin-top:2.5rem;padding-top:1.25rem;border-top:1px solid var(--rule);display:flex;justify-content:space-between}
 .pg-note{font-size:11px;color:var(--ink-faint)}
 .pg-mark{font-family:'EB Garamond',serif;font-size:13px;color:var(--ink-faint);font-style:italic}
@@ -144,6 +145,10 @@ body{background:var(--cream);color:var(--ink);font-family:'DM Sans',sans-serif;m
   <div class="loading" id="loading-panel">
     <div class="ld-steps" id="steps-wrap"></div>
     <div class="ld-note">OCR extraction and AI analysis typically takes 15–30 seconds</div>
+    <button class="btn-stop" id="stop-btn" onclick="stopVetting()">
+      <svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2"/></svg>
+      Stop & reset
+    </button>
   </div>
 
   <div class="report" id="report-panel"><div class="rpt-card" id="rpt-card"></div></div>
@@ -156,7 +161,7 @@ body{background:var(--cream);color:var(--ink);font-family:'DM Sans',sans-serif;m
 
 <script>
 const STEPS_LABELS=['Sending document to Make','Extracting text via OCR','Analysing academic records','Checking post-qualification experience','Verifying declarations','Compiling eligibility report'];
-let file=null, si=0, st;
+let file=null, si=0, st, abortCtrl=null;
 
 // Build step elements
 const sw=document.getElementById('steps-wrap');
@@ -230,9 +235,10 @@ async function runVetting(){
 
   const url=G('webhook-url').value.trim();
   const proxy='https://corsproxy.io/?'+encodeURIComponent(url);
+  abortCtrl=new AbortController();
 
   try{
-    const res=await fetch(proxy,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({fileName:file.name,mimeType:'application/pdf',fileData:b64})});
+    const res=await fetch(proxy,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({fileName:file.name,mimeType:'application/pdf',fileData:b64}),signal:abortCtrl.signal});
     clearInterval(st);
     while(si<=STEPS_LABELS.length) advStep();
     if(!res.ok) throw new Error('Make returned HTTP '+res.status+' — check the scenario is active');
@@ -242,8 +248,17 @@ async function runVetting(){
     renderReport(data);
   }catch(e){
     clearInterval(st); G('loading-panel').classList.remove('show'); G('upload-panel').style.display='';
+    if(e.name==='AbortError') return;
     showErr('Request failed: '+e.message);
   }
+}
+
+function stopVetting(){
+  if(abortCtrl){ abortCtrl.abort(); abortCtrl=null; }
+  clearInterval(st);
+  G('loading-panel').classList.remove('show');
+  G('upload-panel').style.display='';
+  hideErr();
 }
 
 function norm(s){
