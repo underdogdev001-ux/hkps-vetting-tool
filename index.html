@@ -569,12 +569,11 @@ async function runVetting() {
   }
 
   /* POST to Make webhook */
-  const url   = G('webhook-url').value.trim();
-  const proxy = 'https://corsproxy.io/?' + encodeURIComponent(url);
-  abortCtrl   = new AbortController();
+  const url = G('webhook-url').value.trim();
+  abortCtrl = new AbortController();
 
   try {
-    const res = await fetch(proxy, {
+    const res = await fetch(url, {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
       body:    JSON.stringify({ documents: docs }),
