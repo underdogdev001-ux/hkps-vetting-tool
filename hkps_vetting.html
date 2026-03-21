@@ -145,12 +145,12 @@ body{background:var(--cream);color:var(--ink);font-family:'DM Sans',sans-serif;m
   <div class="loading" id="loading-panel">
     <div class="ld-steps" id="steps-wrap"></div>
     <div class="ld-note">OCR extraction and AI analysis typically takes 15–30 seconds</div>
-    <div style="margin-top:1.25rem">
-      <button class="btn-stop" id="stop-btn" onclick="stopVetting()" type="button">
-        <svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2"/></svg>
-        Stop &amp; reset
-      </button>
-    </div>
+  </div>
+  <div id="stop-wrap" style="display:none;margin-top:.75rem;text-align:center">
+    <button class="btn-stop" id="stop-btn" type="button" onclick="stopVetting()">
+      <svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2"/></svg>
+      Stop &amp; reset
+    </button>
   </div>
 
   <div class="report" id="report-panel"><div class="rpt-card" id="rpt-card"></div></div>
@@ -222,18 +222,21 @@ function advStep(){
 
 function readBase64(f){ return new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>res(r.result.split(',')[1]); r.onerror=()=>rej(new Error('File read failed')); r.readAsDataURL(f); }); }
 
+function showLoading(){ G('loading-panel').classList.add('show'); G('stop-wrap').style.display='block'; }
+function hideLoading(){ G('loading-panel').classList.remove('show'); G('stop-wrap').style.display='none'; }
+
 async function runVetting(){
   hideErr();
   G('upload-panel').style.display='none';
   G('report-panel').classList.remove('show');
   resetSteps();
-  G('loading-panel').classList.add('show');
+  showLoading();
   advStep();
   st=setInterval(()=>{ if(si<STEPS_LABELS.length-1) advStep(); },5000);
 
   let b64;
   try{ b64=await readBase64(file); }
-  catch(e){ clearInterval(st); G('loading-panel').classList.remove('show'); G('upload-panel').style.display=''; showErr('Could not read file: '+e.message); return; }
+  catch(e){ clearInterval(st); hideLoading(); G('upload-panel').style.display=''; showErr('Could not read file: '+e.message); return; }
 
   const url=G('webhook-url').value.trim();
   const proxy='https://corsproxy.io/?'+encodeURIComponent(url);
@@ -246,10 +249,10 @@ async function runVetting(){
     if(!res.ok) throw new Error('Make returned HTTP '+res.status+' — check the scenario is active');
     const data=await res.json();
     await new Promise(r=>setTimeout(r,500));
-    G('loading-panel').classList.remove('show');
+    hideLoading();
     renderReport(data);
   }catch(e){
-    clearInterval(st); G('loading-panel').classList.remove('show'); G('upload-panel').style.display='';
+    clearInterval(st); hideLoading(); G('upload-panel').style.display='';
     if(e.name==='AbortError') return;
     showErr('Request failed: '+e.message);
   }
@@ -258,7 +261,7 @@ async function runVetting(){
 function stopVetting(){
   if(abortCtrl){ abortCtrl.abort(); abortCtrl=null; }
   clearInterval(st);
-  G('loading-panel').classList.remove('show');
+  hideLoading();
   G('upload-panel').style.display='';
   hideErr();
 }
