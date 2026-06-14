@@ -76,19 +76,21 @@ body{background:var(--cream);color:var(--ink);font-family:'DM Sans',sans-serif;m
 
 /* Doc rows */
 .doc-list{padding:1rem 1.25rem;display:flex;flex-direction:column;gap:8px}
-.doc-row{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--rule);border-radius:3px;background:#fff;transition:border-color .15s,background .15s}
+.doc-row{display:flex;flex-direction:column;gap:7px;padding:10px 12px;border:1px solid var(--rule);border-radius:3px;background:#fff;transition:border-color .15s,background .15s}
 .doc-row.tagged{border-color:var(--pass-bd);background:var(--pass-bg)}
-.doc-row.conflict{border-color:var(--fail-bd);background:var(--fail-bg)}
+.doc-row.conflict{border-color:var(--warn-bd);background:var(--warn-bg)}
+.doc-row-top{display:flex;align-items:center;gap:10px}
 .doc-thumb{width:30px;height:36px;background:var(--cream);border:1px solid var(--rule);border-radius:2px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .doc-thumb svg{width:13px;height:13px;stroke:var(--ink-light);fill:none;stroke-width:1.4}
 .doc-meta{flex:1;min-width:0}
 .doc-name{font-size:12px;font-weight:500;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .doc-size{font-size:11px;color:var(--ink-light);margin-top:1px}
-.doc-select{font-family:'DM Sans',sans-serif;font-size:12px;border:1px solid var(--rule);border-radius:3px;padding:5px 8px;background:#fff;color:var(--ink);min-width:220px;cursor:pointer;outline:none}
-.doc-select:focus{border-color:var(--ink-mid)}
-.doc-badge{font-size:10px;font-weight:500;padding:2px 8px;border-radius:2px;white-space:nowrap;flex-shrink:0;letter-spacing:.04em}
-.badge-ok{background:var(--pass-bg);color:var(--pass-txt);border:1px solid var(--pass-bd)}
-.badge-dup{background:var(--fail-bg);color:var(--fail-txt);border:1px solid var(--fail-bd)}
+.role-chips{display:flex;flex-wrap:wrap;gap:5px;padding-left:40px}
+.role-chip{font-family:'DM Sans',sans-serif;font-size:11px;padding:3px 10px;border-radius:20px;border:1px solid var(--rule);background:#fff;color:var(--ink-mid);cursor:pointer;white-space:nowrap;transition:border-color .12s,background .12s,color .12s;line-height:1.6}
+.role-chip:hover:not(.taken){border-color:var(--ink-mid);color:var(--ink)}
+.role-chip.selected{background:var(--pass-bg);border-color:var(--pass-bd);color:var(--pass-txt);font-weight:500}
+.role-chip.selected-dup{background:var(--warn-bg);border-color:var(--warn-bd);color:var(--warn-txt);font-weight:500}
+.role-chip.taken{opacity:.32;cursor:not-allowed}
 .badge-compressed{font-size:10px;padding:2px 7px;border-radius:2px;background:#EEF4FB;color:#1A3A6A;border:1px solid #B8CEEB;white-space:nowrap;flex-shrink:0;letter-spacing:.03em}
 
 /* Size warning bar */
@@ -173,20 +175,74 @@ body{background:var(--cream);color:var(--ink);font-family:'DM Sans',sans-serif;m
 
 /* Print */
 @media print{
-  body *{visibility:hidden}
-  #rpt-card,#rpt-card *{visibility:visible}
-  #rpt-card{position:absolute;top:0;left:0;width:100%;box-shadow:none!important;border:none!important}
-  .btn-reset,.btn-dl{display:none!important}
-  .pill,.crit-badge{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
+  body{background:#fff!important;margin:0}
+  .hdr,#main-page,.split-left,#stop-wrap,#loading-panel,.btn-reset,.btn-dl{display:none!important}
+  .split-view{display:block!important;height:auto!important;overflow:visible!important}
+  .split-right{width:100%!important;border:none!important;overflow:visible!important;background:#fff!important}
+  .split-right-inner{padding:2rem 2.75rem 3rem!important}
+  #print-hdr{display:block!important}
+  .rpt-card{border:none!important;box-shadow:none!important}
+  .rpt-hdr{background:#FAFAF8!important;border-bottom:1px solid var(--rule)!important}
+  .crit-hd{background:#FAFAF8!important}
+  .rpt-foot{padding:.9rem 0!important}
+  .disclaimer{max-width:100%!important}
 }
+
+/* ── Floating tag actions ── */
+.tag-float{position:fixed;left:min(calc(50% + 386px), calc(100vw - 148px));top:50%;transform:translateY(-50%);z-index:200;display:none;flex-direction:column;gap:5px;background:#fff;border:1px solid var(--rule);border-radius:5px;padding:10px;box-shadow:0 4px 24px rgba(26,26,24,.1);min-width:126px}
+.tag-float.show{display:flex}
+.tag-float .btn-ghost{justify-content:flex-start;width:100%;text-align:left}
+.tag-float-div{border:none;border-top:1px solid var(--rule);margin:3px 0}
+.tag-float .btn-run{width:100%;justify-content:center}
 
 /* Page footer */
 .pg-foot{margin-top:2.5rem;padding-top:1.25rem;border-top:1px solid var(--rule);display:flex;justify-content:space-between}
 .pg-note{font-size:11px;color:var(--ink-faint)}
 .pg-mark{font-family:'EB Garamond',serif;font-size:13px;color:var(--ink-faint);font-style:italic}
+
+/* ── Login overlay ── */
+.login-overlay{position:fixed;inset:0;z-index:1000;display:flex;align-items:center;justify-content:center;background:rgba(245,242,236,.55);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+.login-overlay.hidden{display:none}
+.login-card{background:#fff;border:1px solid var(--rule);border-radius:6px;padding:2.5rem 2.25rem 2rem;width:100%;max-width:360px;box-shadow:0 8px 32px rgba(26,26,24,.10)}
+.login-seal{width:36px;height:36px;border:1px solid var(--rule);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 1.25rem}
+.login-seal svg{width:16px;height:16px;stroke:var(--ink-mid);fill:none;stroke-width:1.4}
+.login-title{font-family:'EB Garamond',serif;font-size:22px;font-weight:400;text-align:center;margin-bottom:4px}
+.login-sub{font-size:12px;color:var(--ink-light);text-align:center;margin-bottom:1.75rem}
+.login-field{margin-bottom:1rem}
+.login-field label{display:block;font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-light);margin-bottom:6px}
+.login-field input{width:100%;font-family:'DM Sans',sans-serif;font-size:13.5px;border:1px solid var(--rule);border-radius:3px;padding:8px 11px;outline:none;background:#FAFAF8;color:var(--ink);transition:border-color .15s}
+.login-field input:focus{border-color:var(--ink-mid);background:#fff}
+.login-err{font-size:12px;color:var(--fail-txt);background:var(--fail-bg);border:1px solid var(--fail-bd);border-radius:3px;padding:7px 11px;margin-bottom:1rem;display:none}
+.login-err.show{display:block}
+.btn-login{width:100%;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;background:var(--ink);color:var(--cream);border:none;height:40px;border-radius:3px;cursor:pointer;letter-spacing:.02em;transition:opacity .15s;margin-top:.25rem}
+.btn-login:hover{opacity:.82}
+.login-foot{margin-top:1.5rem;text-align:center;font-size:11px;color:var(--ink-faint)}
 </style>
 </head>
 <body>
+
+<!-- ── Login overlay ── -->
+<div class="login-overlay hidden" id="login-overlay" aria-modal="true" role="dialog">
+  <div class="login-card">
+    <div class="login-seal">
+      <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+    </div>
+    <div class="login-title">Registration Board</div>
+    <div class="login-sub">Hong Kong Psychological Society · Internal System</div>
+    <div class="login-err" id="login-err">Incorrect account or password.</div>
+    <div class="login-field">
+      <label for="login-user">Account</label>
+      <input type="text" id="login-user" autocomplete="username" placeholder="Enter account">
+    </div>
+    <div class="login-field">
+      <label for="login-pass">Password</label>
+      <input type="password" id="login-pass" autocomplete="current-password" placeholder="Enter password">
+    </div>
+    <button class="btn-login" id="login-btn" onclick="doLogin()">Sign in</button>
+    <div class="login-foot">For authorised board members only</div>
+  </div>
+</div>
 
 <!-- ── Header ── -->
 <header class="hdr">
@@ -234,10 +290,15 @@ body{background:var(--cream);color:var(--ink);font-family:'DM Sans',sans-serif;m
     </div>
     <div class="upload-foot">
       <div class="upload-note">Upload any available application documents — partial submissions are accepted.<br>Accepted formats: PDF, JPEG, PNG, TIFF. You will label each file before the check runs.<br><span style="color:var(--warn-txt)">Keep total upload under 5 MB for best results — images are auto-compressed before sending.</span></div>
-      <button class="btn-run" id="next-btn" disabled onclick="showTagPhase()">
-        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 8 16 12 12 16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
-        Label documents
-      </button>
+      <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
+        <button class="btn-ghost" id="demo-btn" onclick="loadDemoReport()" title="Load case files and preview the report — no API call needed">
+          <svg viewBox="0 0 24 24" style="width:11px;height:11px;stroke:currentColor;fill:none;stroke-width:1.8;vertical-align:middle;margin-right:4px"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>Use Demo Data
+        </button>
+        <button class="btn-run" id="next-btn" disabled onclick="showTagPhase()">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 8 16 12 12 16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+          Label documents
+        </button>
+      </div>
     </div>
   </div>
 
@@ -249,7 +310,6 @@ body{background:var(--cream);color:var(--ink);font-family:'DM Sans',sans-serif;m
         <div class="tag-title">Assign each document a role</div>
         <div class="tag-sub">Tell the AI what each file represents. Each role can only be assigned once.<br>You may submit a partial set — missing documents will be flagged as "Needs Clarification" in the report.</div>
       </div>
-      <button class="btn-ghost" onclick="resetToUpload()">← Change files</button>
     </div>
 
     <div class="val-bar" id="val-bar"></div>
@@ -258,10 +318,6 @@ body{background:var(--cream);color:var(--ink);font-family:'DM Sans',sans-serif;m
 
     <div class="tag-foot">
       <span class="tag-status" id="tag-status"></span>
-      <button class="btn-run" id="run-btn" disabled onclick="runVetting()">
-        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 8 16 12 12 16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
-        Run eligibility check
-      </button>
     </div>
   </div>
 
@@ -269,7 +325,10 @@ body{background:var(--cream);color:var(--ink);font-family:'DM Sans',sans-serif;m
 
   <footer class="pg-foot">
     <span class="pg-note">For internal use by the HKPS Registration Board only &nbsp;·&nbsp; <em>Demo purposes only — not for official use</em></span>
-    <span class="pg-mark">HKPS · Vetting System v2.2</span>
+    <span style="display:flex;align-items:center;gap:14px">
+      <button onclick="signOut()" style="font-family:'DM Sans',sans-serif;font-size:11px;color:var(--ink-faint);background:none;border:none;cursor:pointer;padding:0;text-decoration:underline;text-underline-offset:2px;text-decoration-color:var(--rule)">Sign out</button>
+      <span class="pg-mark">HKPS · Vetting System v2.2</span>
+    </span>
   </footer>
 </main>
 
@@ -284,16 +343,50 @@ body{background:var(--cream);color:var(--ink);font-family:'DM Sans',sans-serif;m
   </div>
   <div class="split-right">
     <div class="split-right-inner">
+
+      <!-- Print-only report header -->
+      <div id="print-hdr" style="display:none;padding-bottom:1.25rem;margin-bottom:1.75rem;border-bottom:2px solid var(--ink)">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:1rem">
+          <div>
+            <div style="font-family:'EB Garamond',serif;font-size:24px;font-weight:400;color:var(--ink)">Hong Kong Psychological Society</div>
+            <div style="font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-light);margin-top:5px">Registration Board &nbsp;·&nbsp; Eligibility Vetting Report</div>
+          </div>
+          <div style="font-size:11px;color:var(--ink-light);text-align:right;line-height:1.7;flex-shrink:0">
+            <div>By-Laws s.21</div>
+            <div>AI-assisted review — advisory only</div>
+          </div>
+        </div>
+      </div>
+
       <div class="loading" id="loading-panel">
         <div class="ld-spinner"></div>
         <div class="ld-title">Analysing application…</div>
         <div class="ld-note">OCR extraction and AI analysis typically takes 15–45 seconds</div>
+        <div id="ld-timer" style="margin-top:10px;font-size:13px;color:var(--ink-light);font-variant-numeric:tabular-nums">0s</div>
       </div>
       <div class="report" id="report-panel">
         <div class="rpt-card" id="rpt-card"></div>
       </div>
     </div>
   </div>
+</div>
+
+<!-- ── Floating tag actions ── -->
+<div class="tag-float" id="tag-float">
+  <button class="btn-ghost" onclick="autoTagAll()">
+    <svg viewBox="0 0 24 24" style="width:11px;height:11px;stroke:currentColor;fill:none;stroke-width:1.8;vertical-align:middle;margin-right:5px"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>Auto-tag
+  </button>
+  <button class="btn-ghost" onclick="clearAllTags()">
+    <svg viewBox="0 0 24 24" style="width:11px;height:11px;stroke:currentColor;fill:none;stroke-width:1.8;vertical-align:middle;margin-right:5px"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>Clear tags
+  </button>
+  <button class="btn-ghost" onclick="resetToUpload()">
+    <svg viewBox="0 0 24 24" style="width:11px;height:11px;stroke:currentColor;fill:none;stroke-width:1.8;vertical-align:middle;margin-right:5px"><polyline points="15 18 9 12 15 6"/></svg>Change files
+  </button>
+  <hr class="tag-float-div">
+  <button class="btn-run" id="run-btn" disabled onclick="runVetting()">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 8 16 12 12 16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+    Run check
+  </button>
 </div>
 
 <!-- Stop button -->
@@ -305,8 +398,116 @@ body{background:var(--cream);color:var(--ink);font-family:'DM Sans',sans-serif;m
 </div>
 
 <script>
+/* ── Auth ── */
+(function checkAuth() {
+  if (localStorage.getItem('hkps_session') !== '1') {
+    document.getElementById('login-overlay').classList.remove('hidden');
+    setTimeout(() => document.getElementById('login-user').focus(), 50);
+  }
+})();
+
+function doLogin() {
+  const user = document.getElementById('login-user').value.trim();
+  const pass = document.getElementById('login-pass').value;
+  const err  = document.getElementById('login-err');
+  if (user === 'hkpsdemo001' && pass === 'hkps001*') {
+    localStorage.setItem('hkps_session', '1');
+    document.getElementById('login-overlay').classList.add('hidden');
+    err.classList.remove('show');
+  } else {
+    err.classList.add('show');
+    document.getElementById('login-pass').value = '';
+    document.getElementById('login-pass').focus();
+  }
+}
+
+function signOut() {
+  localStorage.removeItem('hkps_session');
+  document.getElementById('login-user').value = '';
+  document.getElementById('login-pass').value = '';
+  document.getElementById('login-err').classList.remove('show');
+  document.getElementById('login-overlay').classList.remove('hidden');
+  setTimeout(() => document.getElementById('login-user').focus(), 50);
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !document.getElementById('login-overlay').classList.contains('hidden')) {
+    doLogin();
+  }
+});
+
+/* ── Demo report ── */
+const DEMO_MANIFEST = [
+  { path: 'Case of James P. Morgan/01_James_P_Morgan_HKPS_RP_Application.pdf', role: 'application_form' },
+  { path: 'Case of James P. Morgan/02_James_P_Morgan_To_HKPS_Urgency_Letter.pdf', role: 'hkps_membership_letter' },
+  { path: 'Case of James P. Morgan/03_James_P_Morgan_Bsc_Certificate.png',        role: 'first_degree_cert' },
+  { path: 'Case of James P. Morgan/04_James_P_Morgan_Bsc_Transcript.png',         role: 'first_degree_transcript' },
+  { path: 'Case of James P. Morgan/05_James_P_Morgan_Msc_Certificate.png',        role: 'higher_degree_cert' },
+  { path: 'Case of James P. Morgan/06_James_P_Morgan_Msc_Transcript.png',         role: 'higher_degree_transcript' },
+  { path: 'Case of James P. Morgan/07_James_P_Morgan_Supervisor_Supporting_Letter.pdf', role: 'work_experience' },
+];
+
+const DEMO_RESULT = {
+  name: 'James Percy Morgan',
+  overall_status: 'Fail',
+  cross_check_status: 'Fail',
+  cross_check_reason: 'Name discrepancy: the application form records the applicant as "James P Morgan", while the degree certificates, transcripts, and supervisor letter all bear the name "James Percy Morgan". Documents must use a consistent legal name throughout the submission.',
+  academic_status: 'Pass',
+  academic_reason: 'BSc degree certificate and transcript confirm Psychology as the discipline of the first degree. The awarding institution and graduation year are consistent across both documents.',
+  membership_status: 'Pass',
+  membership_reason: 'HKPS Graduate Membership is confirmed. Membership status is current and the letter is issued within the accepted validity window.',
+  higher_degree_status: 'Pass',
+  higher_degree_reason: 'Higher degree is an MSc in Global Mental Health. Graduation date is confirmed as subsequent to the first degree, satisfying the sequential requirement under By-Laws s.21.',
+  experience_status: 'Pass',
+  experience_reason: 'Supervisor supporting letter documents 24 months of relevant post-qualification psychological work under an eligible registered supervisor, exceeding the minimum requirement.',
+  declaration_status: 'Pass',
+  declaration_reason: 'Supervisor declaration is fully completed with the supervisor\'s name, professional registration number, organisation, and original signature.'
+};
+
+async function loadDemoReport() {
+  const btn = G('demo-btn');
+  btn.disabled = true;
+  btn.textContent = 'Loading…';
+
+  try {
+    const fetched = await Promise.all(DEMO_MANIFEST.map(async ({ path, role }) => {
+      const res = await fetch(path);
+      if (!res.ok) throw new Error(`Could not load "${path}" (HTTP ${res.status})`);
+      const blob = await res.blob();
+      const name = path.split('/').pop();
+      const extMime = { pdf: 'application/pdf', png: 'image/png', jpg: 'image/jpeg', jpeg: 'image/jpeg' };
+      const mime = extMime[name.split('.').pop().toLowerCase()] || blob.type || 'application/octet-stream';
+      return { file: new File([blob], name, { type: mime }), role };
+    }));
+
+    files       = fetched.map(f => f.file);
+    assignments = {};
+    fetched.forEach(({ role }, i) => { assignments[i] = role; });
+    isDemoMode  = true;
+
+    G('upload-panel').style.display = 'none';
+    G('tag-panel').style.display    = 'block';
+    G('tag-float').classList.add('show');
+    processedFiles = [...files];
+    renderDocList();
+
+    if (files.some(f => isImage(f))) {
+      processedFiles = await Promise.all(
+        files.map(f => isImage(f) ? compressImage(f) : Promise.resolve(f))
+      );
+      renderDocList();
+    }
+  } catch (e) {
+    isDemoMode = false;
+    showErr('Could not load demo files: ' + e.message + '. Serve the app over HTTP (not file://).');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<svg viewBox="0 0 24 24" style="width:11px;height:11px;stroke:currentColor;fill:none;stroke-width:1.8;vertical-align:middle;margin-right:4px"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>Use Demo Data';
+  }
+}
+
 /* ── State ── */
-let files = [], processedFiles = [], assignments = {}, abortCtrl = null, blobUrls = {};
+let files = [], processedFiles = [], assignments = {}, abortCtrl = null, blobUrls = {}, isDemoMode = false;
 
 /* ── Size constants ── */
 const SIZE_LIMIT      = 5 * 1024 * 1024; // 5 MB Make.com webhook limit
@@ -434,12 +635,29 @@ dz.addEventListener('drop', e => {
   if (valid.length) loadFiles(valid);
 });
 
+function autoDetectRole(filename) {
+  const n = filename.toLowerCase();
+  if (/supervisor|declaration|supporting/.test(n))                         return 'work_experience';
+  if (/appli|form/.test(n))                                                return 'application_form';
+  if (/hkps|membership|member/.test(n))                                    return 'hkps_membership_letter';
+  if (/(bsc|bachelor|first|1st).*(cert|degree|diploma)/.test(n))           return 'first_degree_cert';
+  if (/(cert|degree|diploma).*(bsc|bachelor|first|1st)/.test(n))           return 'first_degree_cert';
+  if (/(bsc|bachelor|first|1st).*(transcript|result|grade|mark)/.test(n))  return 'first_degree_transcript';
+  if (/(transcript|result|grade|mark).*(bsc|bachelor|first|1st)/.test(n))  return 'first_degree_transcript';
+  if (/(msc|master|phd|second|2nd|higher).*(cert|degree|diploma)/.test(n)) return 'higher_degree_cert';
+  if (/(cert|degree|diploma).*(msc|master|phd|second|2nd|higher)/.test(n)) return 'higher_degree_cert';
+  if (/(msc|master|phd|second|2nd|higher).*(transcript|result|grade)/.test(n)) return 'higher_degree_transcript';
+  if (/(transcript|result|grade).*(msc|master|phd|second|2nd|higher)/.test(n)) return 'higher_degree_transcript';
+  return null;
+}
+
 function loadFiles(fs) {
   const bad = fs.filter(f => !ACCEPTED_TYPES.test(f.name));
   if (bad.length) { showErr('Unsupported file type: ' + bad.map(f=>f.name).join(', ') + '. Accepted: PDF, JPEG, PNG, TIFF, BMP, WebP.'); return; }
   hideErr();
   files = fs;
   assignments = {};
+  fs.forEach((f, i) => { const r = autoDetectRole(f.name); if (r) assignments[i] = r; });
   const cnt = G('drop-count');
   cnt.textContent = fs.length + ' file' + (fs.length > 1 ? 's' : '') + ' selected — ' + fs.map(f => f.name).join(', ');
   cnt.style.display = 'block';
@@ -450,6 +668,7 @@ function loadFiles(fs) {
 async function showTagPhase() {
   G('upload-panel').style.display = 'none';
   G('tag-panel').style.display    = 'block';
+  G('tag-float').classList.add('show');
   processedFiles = [...files]; // start with originals for immediate render
   renderDocList();
 
@@ -472,6 +691,7 @@ function resetToUpload() {
   files = []; processedFiles = []; assignments = {};
   G('size-bar').style.display = 'none';
   G('tag-panel').style.display    = 'none';
+  G('tag-float').classList.remove('show');
   G('upload-panel').style.display = 'block';
   const cnt = G('drop-count');
   cnt.style.display = 'none'; cnt.textContent = '';
@@ -480,8 +700,18 @@ function resetToUpload() {
   hideErr();
 }
 
+const CHIP_LABELS = {
+  application_form:         'App Form',
+  first_degree_cert:        '1st Cert',
+  first_degree_transcript:  '1st Trans',
+  higher_degree_cert:       '2nd Cert',
+  higher_degree_transcript: '2nd Trans',
+  hkps_membership_letter:   'HKPS Letter',
+  work_experience:          'Work Exp',
+  other:                    'Other'
+};
+
 function renderDocList() {
-  /* count how many times each role is used */
   const used = {};
   Object.values(assignments).forEach(v => { if (v && v !== 'other') used[v] = (used[v] || 0) + 1; });
 
@@ -493,22 +723,6 @@ function renderDocList() {
     const isDup = sel && sel !== 'other' && used[sel] > 1;
     const isOk  = sel && !isDup;
 
-    const row = document.createElement('div');
-    row.className = 'doc-row' + (isOk && sel !== 'other' ? ' tagged' : isDup ? ' conflict' : '');
-
-    /* build select options — disable roles already taken by other files */
-    const opts = ROLES.map(r => {
-      const takenByOther = used[r.value] > 0 && r.value !== 'other' && assignments[i] !== r.value;
-      return `<option value="${r.value}" ${sel === r.value ? 'selected' : ''} ${takenByOther ? 'disabled' : ''}>` +
-             `${takenByOther ? '✓  ' : ''}${r.label}</option>`;
-    }).join('');
-
-    const badge = isDup
-      ? `<span class="doc-badge badge-dup">Duplicate</span>`
-      : (sel && sel !== 'other')
-        ? `<span class="doc-badge badge-ok">✓</span>`
-        : '';
-
     const pf = processedFiles[i] || f;
     const wasCompressed = isImage(f) && pf.size < f.size;
     const extLabel = isImage(f) ? pf.name.split('.').pop().toUpperCase() : 'PDF';
@@ -516,19 +730,26 @@ function renderDocList() {
       ? `${fmtSize(pf.size)} <span style="text-decoration:line-through;opacity:.55">${fmtSize(f.size)}</span> · ${extLabel} <span style="color:#1A3A6A;font-weight:500">↓ ${Math.round((1 - pf.size / f.size) * 100)}%</span>`
       : `${fmtSize(f.size)} · ${extLabel}`;
 
+    const chips = ROLES.map(r => {
+      const isSel       = sel === r.value;
+      const takenByOther = used[r.value] > 0 && r.value !== 'other' && !isSel;
+      const cls = isSel
+        ? (isDup ? 'role-chip selected-dup' : 'role-chip selected')
+        : takenByOther ? 'role-chip taken' : 'role-chip';
+      return `<button class="${cls}" ${takenByOther ? 'disabled' : `onclick="assign(${i},'${r.value}')"`}>${CHIP_LABELS[r.value]}</button>`;
+    }).join('');
+
+    const row = document.createElement('div');
+    row.className = 'doc-row' + (isOk && sel !== 'other' ? ' tagged' : isDup ? ' conflict' : '');
     row.innerHTML = `
-      <div class="doc-thumb">
-        ${fileIcon(f)}
+      <div class="doc-row-top">
+        <div class="doc-thumb">${fileIcon(f)}</div>
+        <div class="doc-meta">
+          <div class="doc-name">${f.name}</div>
+          <div class="doc-size">${sizeLabel}</div>
+        </div>
       </div>
-      <div class="doc-meta">
-        <div class="doc-name">${f.name}</div>
-        <div class="doc-size">${sizeLabel}</div>
-      </div>
-      <select class="doc-select" onchange="assign(${i}, this.value)">
-        <option value="">— Select document type —</option>
-        ${opts}
-      </select>
-      ${badge}
+      <div class="role-chips">${chips}</div>
     `;
     list.appendChild(row);
   });
@@ -537,7 +758,17 @@ function renderDocList() {
 }
 
 function assign(i, v) {
-  assignments[i] = v;
+  assignments[i] = assignments[i] === v ? '' : v;
+  renderDocList();
+}
+
+function clearAllTags() {
+  assignments = {};
+  renderDocList();
+}
+
+function autoTagAll() {
+  files.forEach((f, i) => { const r = autoDetectRole(f.name); if (r) assignments[i] = r; });
   renderDocList();
 }
 
@@ -619,6 +850,7 @@ function switchDoc(i) {
   }
 }
 function showSplit() {
+  G('tag-float').classList.remove('show');
   G('main-page').style.display = 'none';
   Object.values(blobUrls).forEach(u => URL.revokeObjectURL(u));
   blobUrls = {};
@@ -642,11 +874,36 @@ function hideSplit() {
   Object.values(blobUrls).forEach(u => URL.revokeObjectURL(u));
   blobUrls = {};
 }
-function showLoading() { G('loading-panel').classList.add('show'); G('stop-wrap').style.display = 'block'; }
-function hideLoading() { G('loading-panel').classList.remove('show'); G('stop-wrap').style.display = 'none'; }
+let _timerStart = 0, _timerRaf = null;
+function _tickTimer() {
+  G('ld-timer').textContent = Math.floor((Date.now() - _timerStart) / 1000) + 's';
+  _timerRaf = requestAnimationFrame(_tickTimer);
+}
+function showLoading() {
+  G('loading-panel').classList.add('show');
+  G('stop-wrap').style.display = 'block';
+  _timerStart = Date.now();
+  G('ld-timer').textContent = '0s';
+  _timerRaf = requestAnimationFrame(_tickTimer);
+}
+function hideLoading() {
+  G('loading-panel').classList.remove('show');
+  G('stop-wrap').style.display = 'none';
+  if (_timerRaf) { cancelAnimationFrame(_timerRaf); _timerRaf = null; }
+}
 
 async function runVetting() {
   hideErr();
+
+  if (isDemoMode) {
+    showSplit();
+    G('report-panel').classList.remove('show');
+    showLoading();
+    await new Promise(r => setTimeout(r, 5000));
+    hideLoading();
+    renderReport(DEMO_RESULT);
+    return;
+  }
 
   showSplit();
   G('report-panel').classList.remove('show');
@@ -771,13 +1028,14 @@ function resetAll() {
   G('report-panel').classList.remove('show');
   hideSplit();
   G('tag-panel').style.display    = 'none';
+  G('tag-float').classList.remove('show');
   G('upload-panel').style.display = 'block';
   const cnt = G('drop-count');
   cnt.style.display = 'none'; cnt.textContent = '';
   G('next-btn').disabled = true;
   G('val-bar').style.display = 'none';
   G('size-bar').style.display = 'none';
-  files = []; processedFiles = []; assignments = {};
+  files = []; processedFiles = []; assignments = {}; isDemoMode = false;
   fi.value = '';
   hideErr();
 }
